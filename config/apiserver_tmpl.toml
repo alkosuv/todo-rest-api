@@ -1,0 +1,10 @@
+bind_addr = ":8080"
+log_level =  "debug"
+
+[database]
+    host = "127.0.0.1"
+    port = "5432" 
+    user = "postgres" 
+    password = "" 
+    database = "name_database" 
+    sslmode = "disable"
