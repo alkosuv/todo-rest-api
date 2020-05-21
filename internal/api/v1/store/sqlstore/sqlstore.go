@@ -10,6 +10,7 @@ import (
 type SQLStore struct {
 	db             *sql.DB
 	todoRepository *TodoRepository
+	userRepository *UserRepository
 }
 
 // NewStore ...
@@ -30,4 +31,16 @@ func (s *SQLStore) Todo() store.TodoRepository {
 	}
 
 	return s.todoRepository
+}
+
+// User ...
+func (s *SQLStore) User() store.UserRepository {
+	if s.userRepository != nil {
+		return s.userRepository
+	}
+
+	s.userRepository = &UserRepository{
+		db: s.db,
+	}
+	return s.userRepository
 }

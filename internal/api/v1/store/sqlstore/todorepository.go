@@ -82,7 +82,7 @@ func (r *TodoRepository) CountAll(userID int) (int, error) {
 	return count, nil
 }
 
-// CountFindCompleted ...
+// CountCompleted ...
 func (r *TodoRepository) CountCompleted(userID int, completed string) (int, error) {
 	var count int
 	err := r.db.QueryRow(

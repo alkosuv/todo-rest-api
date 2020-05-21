@@ -32,17 +32,21 @@ func NewServer(router *mux.Router, logger *logrus.Logger, store store.Store) *Se
 
 // ConfigureRouter ...
 func (s *Server) ConfigureRouter() {
-	s.router.HandleFunc("/todos", s.handlerGetTodos()).Methods(http.MethodGet)
-	s.router.HandleFunc("/todos/sort", s.handlerGetTodosSort()).Methods(http.MethodGet)
-	s.router.HandleFunc("/todos/sort/count", s.handlerTodosSortCount()).Methods(http.MethodGet)
+	s.router.HandleFunc("/todos", s.handlerTodosDet()).Methods(http.MethodGet)
 	s.router.HandleFunc("/todos/count", s.handlerTodosCount()).Methods(http.MethodGet)
-	s.router.HandleFunc("/todos", s.handlerPostTodo()).Methods(http.MethodPost)
-	s.router.HandleFunc("/todos/{id:[0-9]+}", s.handlerDeleteTodo()).Methods(http.MethodDelete)
-	s.router.HandleFunc("/todos/{id:[0-9]+}", s.handlerPatchTodo()).Methods(http.MethodPatch)
+	s.router.HandleFunc("/todos/find", s.handlerTodosGetCompleted()).Methods(http.MethodGet)
+	s.router.HandleFunc("/todos/find/count", s.handlerTodosGetCountCompleted()).Methods(http.MethodGet)
+	s.router.HandleFunc("/todos", s.handlerTodoPost()).Methods(http.MethodPost)
+	s.router.HandleFunc("/todos/{id:[0-9]+}", s.handlerTodoDelete()).Methods(http.MethodDelete)
+	s.router.HandleFunc("/todos/{id:[0-9]+}", s.handlerTodoPatch()).Methods(http.MethodPatch)
+
+	s.router.HandleFunc("/user", s.handlerUserGet()).Methods(http.MethodGet)
+	s.router.HandleFunc("/user", s.handlerUserPost()).Methods(http.MethodPost)
+	s.router.HandleFunc("/user", s.handlerUserPatch()).Methods(http.MethodPatch)
 }
 
 /*
-responseJSON
+response
 	...
 */
 func (s *Server) response(
@@ -68,5 +72,5 @@ func (s *Server) responseError(
 	statusCode int,
 	err error,
 ) {
-	s.response(w, r, statusCode, err)
+	s.response(w, r, statusCode, map[string]string{"error": err.Error()})
 }

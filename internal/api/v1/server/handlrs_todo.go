@@ -10,7 +10,7 @@ import (
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 )
 
-func (s *Server) handlerGetTodos() http.HandlerFunc {
+func (s *Server) handlerTodosDet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: UserID инициализировать из Context
 		userID := 1
@@ -24,7 +24,7 @@ func (s *Server) handlerGetTodos() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handlerGetTodosSort() http.HandlerFunc {
+func (s *Server) handlerTodosGetCompleted() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		completed := r.URL.Query()["completed"][0]
 
@@ -56,7 +56,7 @@ func (s *Server) handlerTodosCount() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handlerTodosSortCount() http.HandlerFunc {
+func (s *Server) handlerTodosGetCountCompleted() http.HandlerFunc {
 	type response struct {
 		Count int `json:"count"`
 	}
@@ -74,7 +74,7 @@ func (s *Server) handlerTodosSortCount() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handlerPostTodo() http.HandlerFunc {
+func (s *Server) handlerTodoPost() http.HandlerFunc {
 	type response struct {
 		Title string `json:"title"`
 	}
@@ -98,7 +98,7 @@ func (s *Server) handlerPostTodo() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handlerDeleteTodo() http.HandlerFunc {
+func (s *Server) handlerTodoDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
 		userID := 1
@@ -110,8 +110,8 @@ func (s *Server) handlerDeleteTodo() http.HandlerFunc {
 	}
 }
 
-func (s *Server) handlerPatchTodo() http.HandlerFunc {
-	type patch struct {
+func (s *Server) handlerTodoPatch() http.HandlerFunc {
+	type response struct {
 		Column string `json:"column"`
 		Value  string `json:"value"`
 	}
@@ -121,7 +121,7 @@ func (s *Server) handlerPatchTodo() http.HandlerFunc {
 		// TODO: UserID инициализировать из Context
 		userID := 1
 
-		p := &patch{}
+		p := new(response)
 		json.NewDecoder(r.Body).Decode(p)
 
 		if err := s.store.Todo().Patch(userID, id, p.Column, p.Value); err != nil {
