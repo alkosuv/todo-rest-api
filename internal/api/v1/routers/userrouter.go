@@ -33,9 +33,9 @@ func (ur *UserRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // ConfigureRouter ...
 func (ur *UserRouter) ConfigureRouter() {
-	ur.router.HandleFunc("/user", ur.handlerUserGet()).Methods(http.MethodGet)
-	ur.router.HandleFunc("/user", ur.handlerUserPost()).Methods(http.MethodPost)
-	ur.router.HandleFunc("/user", ur.handlerUserPatch()).Methods(http.MethodPatch)
+	ur.router.HandleFunc("/users", ur.handlerUserGet()).Methods(http.MethodGet)
+	ur.router.HandleFunc("/users", ur.handlerUserPost()).Methods(http.MethodPost)
+	ur.router.HandleFunc("/users", ur.handlerUserPatch()).Methods(http.MethodPatch)
 }
 
 func (ur *UserRouter) handlerUserGet() http.HandlerFunc {

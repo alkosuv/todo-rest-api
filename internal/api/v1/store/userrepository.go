@@ -10,4 +10,5 @@ type UserRepository interface {
 	FindByLogin(string) (*model.User, error)
 	Create(*model.User) error
 	Patch(id int, column string, value string) error
+	Exists(login string, password string) (int, error)
 }

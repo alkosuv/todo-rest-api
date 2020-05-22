@@ -35,7 +35,7 @@ func (tr *TodoRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 // ConfigureRouter ...
 func (tr *TodoRouter) ConfigureRouter() {
-	tr.router.HandleFunc("/todos", tr.handlerTodosDet()).Methods(http.MethodGet)
+	tr.router.HandleFunc("/todos", tr.handlerTodosGet()).Methods(http.MethodGet)
 	tr.router.HandleFunc("/todos/count", tr.handlerTodosCount()).Methods(http.MethodGet)
 	tr.router.HandleFunc("/todos/find", tr.handlerTodosGetCompleted()).Methods(http.MethodGet)
 	tr.router.HandleFunc("/todos/find/count", tr.handlerTodosGetCountCompleted()).Methods(http.MethodGet)
@@ -44,7 +44,7 @@ func (tr *TodoRouter) ConfigureRouter() {
 	tr.router.HandleFunc("/todos/{id:[0-9]+}", tr.handlerTodoPatch()).Methods(http.MethodPatch)
 }
 
-func (tr *TodoRouter) handlerTodosDet() http.HandlerFunc {
+func (tr *TodoRouter) handlerTodosGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: UserID инициализировать из Context
 		userID := 1

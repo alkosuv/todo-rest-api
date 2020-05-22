@@ -1,5 +1,6 @@
 bind_addr = ":8080"
 log_level =  "debug"
+session_key = "10101010101010100101010101001"
 
 [database]
     host = "127.0.0.1"

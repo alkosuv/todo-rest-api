@@ -72,3 +72,21 @@ func (r *UserRepository) Patch(id int, column string, value string) error {
 	}
 	return nil
 }
+
+// Exists ...
+func (r *UserRepository) Exists(login string, password string) (int, error) {
+	var id int
+	err := r.db.QueryRow(
+		`SELECT id FROM users WHERE login=$1 AND password=$2`,
+		login, password,
+	).Scan(&id)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, store.ErrRecordNotFound
+		}
+		return 0, err
+	}
+
+	return id, nil
+}
