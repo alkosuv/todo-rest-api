@@ -8,7 +8,6 @@ import (
 // Response ...
 func Response(
 	w http.ResponseWriter,
-	r *http.Request,
 	statusCode int,
 	data interface{},
 ) {
@@ -22,9 +21,8 @@ func Response(
 // Error ...
 func Error(
 	w http.ResponseWriter,
-	r *http.Request,
 	statusCode int,
 	err error,
 ) {
-	Response(w, r, statusCode, map[string]string{"error": err.Error()})
+	Response(w, statusCode, map[string]string{"error": err.Error()})
 }

@@ -51,11 +51,11 @@ func (tr *TodoRouter) handlerTodosGet() http.HandlerFunc {
 
 		todos, err := tr.store.Todo().GetAll(user.ID)
 		if err != nil {
-			response.Error(w, r, http.StatusInternalServerError, err)
+			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		response.Response(w, r, http.StatusOK, todos)
+		response.Response(w, http.StatusOK, todos)
 	}
 }
 
@@ -67,11 +67,11 @@ func (tr *TodoRouter) handlerTodosGetCompleted() http.HandlerFunc {
 
 		todos, err := tr.store.Todo().FindCompleted(user.ID, completed)
 		if err != nil {
-			response.Error(w, r, http.StatusInternalServerError, err)
+			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		response.Response(w, r, http.StatusOK, todos)
+		response.Response(w, http.StatusOK, todos)
 	}
 }
 
@@ -84,10 +84,10 @@ func (tr *TodoRouter) handlerTodosCount() http.HandlerFunc {
 
 		count, err := tr.store.Todo().CountAll(user.ID)
 		if err != nil {
-			response.Error(w, r, http.StatusInternalServerError, err)
+			response.Error(w, http.StatusInternalServerError, err)
 		}
 
-		response.Response(w, r, http.StatusOK, &resp{Count: count})
+		response.Response(w, http.StatusOK, &resp{Count: count})
 	}
 }
 
@@ -102,10 +102,10 @@ func (tr *TodoRouter) handlerTodosGetCountCompleted() http.HandlerFunc {
 
 		count, err := tr.store.Todo().CountCompleted(user.ID, completed)
 		if err != nil {
-			response.Error(w, r, http.StatusInternalServerError, err)
+			response.Error(w, http.StatusInternalServerError, err)
 		}
 
-		response.Response(w, r, http.StatusOK, &resp{Count: count})
+		response.Response(w, http.StatusOK, &resp{Count: count})
 	}
 }
 
@@ -128,10 +128,10 @@ func (tr *TodoRouter) handlerTodoPost() http.HandlerFunc {
 
 		if err := tr.store.Todo().Create(todo); err != nil {
 			tr.logger.Error(err)
-			response.Error(w, r, http.StatusUnprocessableEntity, err)
+			response.Error(w, http.StatusUnprocessableEntity, err)
 			return
 		}
-		response.Response(w, r, http.StatusCreated, todo)
+		response.Response(w, http.StatusCreated, todo)
 	}
 }
 
@@ -141,10 +141,10 @@ func (tr *TodoRouter) handlerTodoDelete() http.HandlerFunc {
 
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
 		if err := tr.store.Todo().Delete(user.ID, id); err != nil {
-			response.Error(w, r, http.StatusBadRequest, err)
+			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
-		response.Response(w, r, http.StatusOK, nil)
+		response.Response(w, http.StatusOK, nil)
 	}
 }
 
@@ -162,10 +162,10 @@ func (tr *TodoRouter) handlerTodoPatch() http.HandlerFunc {
 		json.NewDecoder(r.Body).Decode(req)
 
 		if err := tr.store.Todo().Patch(user.ID, id, req.Column, req.Value); err != nil {
-			response.Error(w, r, http.StatusBadRequest, nil)
+			response.Error(w, http.StatusBadRequest, nil)
 			return
 		}
 
-		response.Response(w, r, http.StatusOK, nil)
+		response.Response(w, http.StatusOK, nil)
 	}
 }

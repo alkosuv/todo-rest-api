@@ -51,30 +51,30 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := new(request)
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			response.Error(w, r, http.StatusBadRequest, err)
+			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
 
 		// Проверка на существания пользователя
 		id, err := m.store.User().Exists(req.Login, req.Password)
 		if err != nil {
-			response.Error(w, r, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
+			response.Error(w, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
 			return
 		}
 
 		sessions, err := m.session.Get(r, sessionName)
 		if err != nil {
-			response.Error(w, r, http.StatusInternalServerError, err)
+			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 
 		sessions.Values["user_id"] = id
 		if err := m.session.Save(r, w, sessions); err != nil {
-			response.Error(w, r, http.StatusInternalServerError, err)
+			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		response.Response(w, r, http.StatusOK, nil)
+		response.Response(w, http.StatusOK, nil)
 	}
 }
 
@@ -84,16 +84,16 @@ func (m *Middleware) handlerUserRegister() http.HandlerFunc {
 		json.NewDecoder(r.Body).Decode(user)
 
 		if u, _ := m.store.User().FindByLogin(user.Login); u != nil {
-			response.Error(w, r, http.StatusBadRequest, response.ErrLoginUnavailable)
+			response.Error(w, http.StatusBadRequest, response.ErrLoginUnavailable)
 			return
 		}
 
 		if err := m.store.User().Create(user); err != nil {
-			response.Error(w, r, http.StatusBadRequest, err)
+			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
 
-		response.Response(w, r, http.StatusCreated, user)
+		response.Response(w, http.StatusCreated, user)
 	}
 }
 
@@ -102,19 +102,19 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := m.session.Get(r, sessionName)
 		if err != nil {
-			response.Error(w, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
 		id, ok := session.Values["user_id"]
 		if !ok {
-			response.Error(w, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
 		user, err := m.store.User().FindByID(id.(int))
 		if err != nil {
-			response.Error(w, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
@@ -133,7 +133,7 @@ func (m *Middleware) UserIsEmpty(next http.Handler) http.Handler {
 		user := r.Context().Value(CtxKeyUser).(*model.User)
 
 		if user.IsNil() {
-			response.Response(w, r, http.StatusInternalServerError, response.ErrSessions)
+			response.Response(w, http.StatusInternalServerError, response.ErrSessions)
 			return
 		}
 

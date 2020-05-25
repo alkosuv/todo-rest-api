@@ -41,7 +41,7 @@ func (ur *UserRouter) ConfigureRouter() {
 func (ur *UserRouter) handlerUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
-		response.Response(w, r, http.StatusOK, user)
+		response.Response(w, http.StatusOK, user)
 	}
 }
 
@@ -57,10 +57,10 @@ func (ur *UserRouter) handlerUserPatch() http.HandlerFunc {
 		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
 
 		if err := ur.store.User().Patch(user.ID, req.Column, req.Value); err != nil {
-			response.Error(w, r, http.StatusBadRequest, err)
+			response.Error(w, http.StatusBadRequest, err)
 			return
 		}
 
-		response.Response(w, r, http.StatusOK, nil)
+		response.Response(w, http.StatusOK, nil)
 	}
 }
