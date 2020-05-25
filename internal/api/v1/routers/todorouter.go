@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/middleware"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/response"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
@@ -46,9 +47,9 @@ func (tr *TodoRouter) ConfigureRouter() {
 
 func (tr *TodoRouter) handlerTodosGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: UserID инициализировать из Context
-		userID := 1
-		todos, err := tr.store.Todo().GetAll(userID)
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+
+		todos, err := tr.store.Todo().GetAll(user.ID)
 		if err != nil {
 			response.Error(w, r, http.StatusInternalServerError, err)
 			return
@@ -62,9 +63,9 @@ func (tr *TodoRouter) handlerTodosGetCompleted() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		completed := r.URL.Query()["completed"][0]
 
-		// TODO: UserID инициализировать из Context
-		userID := 1
-		todos, err := tr.store.Todo().FindCompleted(userID, completed)
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+
+		todos, err := tr.store.Todo().FindCompleted(user.ID, completed)
 		if err != nil {
 			response.Error(w, r, http.StatusInternalServerError, err)
 			return
@@ -79,9 +80,9 @@ func (tr *TodoRouter) handlerTodosCount() http.HandlerFunc {
 		Count int `json:"count"`
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: UserID инициализировать из Context
-		userID := 1
-		count, err := tr.store.Todo().CountAll(userID)
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+
+		count, err := tr.store.Todo().CountAll(user.ID)
 		if err != nil {
 			response.Error(w, r, http.StatusInternalServerError, err)
 		}
@@ -97,9 +98,9 @@ func (tr *TodoRouter) handlerTodosGetCountCompleted() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		completed := r.URL.Query()["completed"][0]
 
-		// TODO: UserID инициализировать из Context
-		userID := 1
-		count, err := tr.store.Todo().CountCompleted(userID, completed)
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+
+		count, err := tr.store.Todo().CountCompleted(user.ID, completed)
 		if err != nil {
 			response.Error(w, r, http.StatusInternalServerError, err)
 		}
@@ -117,10 +118,12 @@ func (tr *TodoRouter) handlerTodoPost() http.HandlerFunc {
 		req := new(request)
 		json.NewDecoder(r.Body).Decode(req)
 
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+
 		// TODO: UserID инициализировать из Context
 		todo := &model.Todo{
 			Title:  req.Title,
-			UserID: 1,
+			UserID: user.ID,
 		}
 
 		if err := tr.store.Todo().Create(todo); err != nil {
@@ -134,9 +137,10 @@ func (tr *TodoRouter) handlerTodoPost() http.HandlerFunc {
 
 func (tr *TodoRouter) handlerTodoDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
-		userID := 1
-		if err := tr.store.Todo().Delete(userID, id); err != nil {
+		if err := tr.store.Todo().Delete(user.ID, id); err != nil {
 			response.Error(w, r, http.StatusBadRequest, err)
 			return
 		}
@@ -151,14 +155,13 @@ func (tr *TodoRouter) handlerTodoPatch() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, _ := strconv.Atoi(mux.Vars(r)["id"])
-		// TODO: UserID инициализировать из Context
-		userID := 1
+		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
 
+		id, _ := strconv.Atoi(mux.Vars(r)["id"])
 		req := new(request)
 		json.NewDecoder(r.Body).Decode(req)
 
-		if err := tr.store.Todo().Patch(userID, id, req.Column, req.Value); err != nil {
+		if err := tr.store.Todo().Patch(user.ID, id, req.Column, req.Value); err != nil {
 			response.Error(w, r, http.StatusBadRequest, nil)
 			return
 		}

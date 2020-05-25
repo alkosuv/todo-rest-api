@@ -11,4 +11,7 @@ var (
 
 	// ErrNotAuthenticated ...
 	ErrNotAuthenticated = errors.New("not authenticated")
+
+	// ErrSessions ...
+	ErrSessions = errors.New("error session")
 )

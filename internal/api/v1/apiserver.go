@@ -60,6 +60,7 @@ func (s *APIServer) initRouter(logger *logrus.Logger, store store.Store) *mux.Ro
 
 	private := api.PathPrefix("/private").Subrouter()
 	private.Use(m.AuthenticateUser)
+	private.Use(m.UserIsEmpty)
 
 	ur := routers.NewUserRouter(private, logger, store)
 	ur.ConfigureRouter()

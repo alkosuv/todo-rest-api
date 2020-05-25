@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/response"
 
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
@@ -39,6 +40,7 @@ func NewMiddleware(router *mux.Router, logger *logrus.Logger, store store.Store,
 // ConfigureMiddleware ...
 func (m *Middleware) ConfigureMiddleware() {
 	m.router.HandleFunc("/sessions", m.handlerSessionCreate()).Methods(http.MethodPost)
+	m.router.HandleFunc("/users", m.handlerUserRegister()).Methods(http.MethodPost)
 }
 
 func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
@@ -76,6 +78,25 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 	}
 }
 
+func (m *Middleware) handlerUserRegister() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := new(model.User)
+		json.NewDecoder(r.Body).Decode(user)
+
+		if u, _ := m.store.User().FindByLogin(user.Login); u != nil {
+			response.Error(w, r, http.StatusBadRequest, response.ErrLoginUnavailable)
+			return
+		}
+
+		if err := m.store.User().Create(user); err != nil {
+			response.Error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		response.Response(w, r, http.StatusCreated, user)
+	}
+}
+
 // AuthenticateUser ...
 func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -88,11 +109,13 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 		id, ok := session.Values["user_id"]
 		if !ok {
 			response.Error(w, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			return
 		}
 
 		user, err := m.store.User().FindByID(id.(int))
 		if err != nil {
 			response.Error(w, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			return
 		}
 
 		next.ServeHTTP(w, r.WithContext(context.WithValue(
@@ -101,5 +124,19 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 			user,
 		)))
 
+	})
+}
+
+// UserIsEmpty ...
+func (m *Middleware) UserIsEmpty(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value(CtxKeyUser).(*model.User)
+
+		if user.IsNil() {
+			response.Response(w, r, http.StatusInternalServerError, response.ErrSessions)
+			return
+		}
+
+		next.ServeHTTP(w, r)
 	})
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/BurntSushi/toml"
@@ -30,6 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+	fmt.Println("Server is listening...")
 	if err := apiserver.Start(); err != nil {
 		log.Fatal(err)
 	}
