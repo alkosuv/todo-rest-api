@@ -5,11 +5,7 @@ import (
 )
 
 // IsString ...
-func IsString(str string, lower int, upper int, pattern string) (bool, error) {
-	if len(str) < lower || len(str) > upper {
-		return false, ErrLen
-	}
-
+func IsString(str string, pattern string) (bool, error) {
 	matched, err := regexp.Match(pattern, []byte(str))
 	if err != nil {
 		return false, err

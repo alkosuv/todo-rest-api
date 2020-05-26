@@ -27,7 +27,7 @@ const (
 	sessionName = "session"
 )
 
-// NewMiddleware  ...
+// NewMiddleware создание новой Middleware структуры
 func NewMiddleware(router *mux.Router, logger *logrus.Logger, store store.Store, sessionKey string) *Middleware {
 	return &Middleware{
 		router:  router,
@@ -43,31 +43,37 @@ func (m *Middleware) ConfigureMiddleware() {
 	m.router.HandleFunc("/users", m.handlerUserRegister()).Methods(http.MethodPost)
 }
 
+// handlerSessionCreate создание сессии
 func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
-	type request struct {
-		Login    string `json:"login"`
-		Password string `json:"password"`
-	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := new(request)
-		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			response.Error(w, http.StatusBadRequest, err)
+		u := new(model.User)
+		if err := json.NewDecoder(r.Body).Decode(u); err != nil {
+			response.Error(w, http.StatusInternalServerError, nil)
 			return
 		}
 
-		// Проверка на существания пользователя
-		id, err := m.store.User().Exists(req.Login, req.Password)
+		// валидация полученных данных
+		if !u.IsLogin() && !u.IsPassword() {
+			response.Error(w, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
+			return
+		}
+
+		// проверка на существания пользователя
+		id, err := m.store.User().Exists(u.Login, u.Password)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
 			return
 		}
 
+		// создание сессии
 		sessions, err := m.session.Get(r, sessionName)
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
 			return
 		}
 
+		// регистрация пользователя в сессии
 		sessions.Values["user_id"] = id
 		if err := m.session.Save(r, w, sessions); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
@@ -78,16 +84,26 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 	}
 }
 
+// handlerUserRegister регистрация пользователя в системе
 func (m *Middleware) handlerUserRegister() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := new(model.User)
-		json.NewDecoder(r.Body).Decode(user)
+		if err := json.NewDecoder(r.Body).Decode(user); err != nil {
+			response.Error(w, http.StatusInternalServerError, nil)
+		}
 
+		// валидация данных
+		if !user.IsUser() {
+			response.Error(w, http.StatusBadRequest, response.ErrIncorrectData)
+		}
+
+		// проверка на уникальность логина
 		if u, _ := m.store.User().FindByLogin(user.Login); u != nil {
 			response.Error(w, http.StatusBadRequest, response.ErrLoginUnavailable)
 			return
 		}
 
+		//  добавление пользователя
 		if err := m.store.User().Create(user); err != nil {
 			response.Error(w, http.StatusBadRequest, err)
 			return
@@ -97,37 +113,42 @@ func (m *Middleware) handlerUserRegister() http.HandlerFunc {
 	}
 }
 
-// AuthenticateUser ...
+// AuthenticateUser авторизация пользователя в системе
 func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// получение сессии
 		session, err := m.session.Get(r, sessionName)
 		if err != nil {
 			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
+		// получение userID из сессии
 		id, ok := session.Values["user_id"]
 		if !ok {
 			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
+		// поиск пользовател в БД по id
 		user, err := m.store.User().FindByID(id.(int))
 		if err != nil {
 			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
-		next.ServeHTTP(w, r.WithContext(context.WithValue(
+		// запись пользователя в context
+		req := r.WithContext(context.WithValue(
 			r.Context(),
 			CtxKeyUser,
 			user,
-		)))
+		))
 
+		next.ServeHTTP(w, req)
 	})
 }
 
-// UserIsEmpty ...
+// UserIsEmpty проверяет наличие авторезованного пользователя в context
 func (m *Middleware) UserIsEmpty(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := r.Context().Value(CtxKeyUser).(*model.User)

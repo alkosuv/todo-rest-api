@@ -52,7 +52,13 @@ func (ur *UserRouter) handlerUserPatch() http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := new(request)
-		json.NewDecoder(r.Body).Decode(req)
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			response.Error(w, http.StatusInternalServerError, nil)
+		}
+
+		if !model.UserPatchValid(req.Column, req.Value) {
+			response.Error(w, http.StatusBadRequest, response.ErrIncorrectData)
+		}
 
 		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
 

@@ -41,7 +41,7 @@ func TestUser_ValidLogin(t *testing.T) {
 			name: "fist char number",
 			u: func() *model.User {
 				u := model.TestUser(t)
-				u.Login = "12345"
+				u.Login = "1user"
 				return u
 			},
 			isValid: false,
@@ -183,6 +183,67 @@ func TestUser_ValidName(t *testing.T) {
 	for _, tc := range testCase {
 		t.Run(tc.name, func(t *testing.T) {
 			valid := tc.u().IsName()
+			assert.Equal(t, tc.isValid, valid)
+		})
+	}
+}
+
+func TestUser_UserPatchValid(t *testing.T) {
+	testCase := []struct {
+		name    string
+		column  string
+		value   string
+		isValid bool
+	}{
+		{
+			name:    "password valid",
+			column:  "password",
+			value:   "password123",
+			isValid: true,
+		},
+		{
+			name:    "password lower",
+			column:  "password",
+			value:   "",
+			isValid: false,
+		},
+		{
+			name:    "password upper",
+			column:  "password",
+			value:   strings.Repeat("a", 16),
+			isValid: false,
+		},
+
+		{
+			name:    "name valid",
+			column:  "name",
+			value:   "name",
+			isValid: true,
+		},
+		{
+			name:    "name lower",
+			column:  "name",
+			value:   "",
+			isValid: false,
+		},
+		{
+			name:    "name upper",
+			column:  "name",
+			value:   strings.Repeat("a", 31),
+			isValid: false,
+		},
+
+		{
+			name:    "invalid column",
+			column:  "column",
+			value:   "value",
+			isValid: false,
+		},
+	}
+
+	for _, tc := range testCase {
+		t.Run(tc.name, func(t *testing.T) {
+			valid := model.UserPatchValid(tc.column, tc.value)
 			assert.Equal(t, tc.isValid, valid)
 		})
 	}

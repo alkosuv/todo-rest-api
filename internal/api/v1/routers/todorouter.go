@@ -110,20 +110,16 @@ func (tr *TodoRouter) handlerTodosGetCountCompleted() http.HandlerFunc {
 }
 
 func (tr *TodoRouter) handlerTodoPost() http.HandlerFunc {
-	type request struct {
-		Title string `json:"title"`
-	}
-
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := new(request)
-		json.NewDecoder(r.Body).Decode(req)
+		todo := new(model.Todo)
+		json.NewDecoder(r.Body).Decode(todo)
 
 		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+		todo.UserID = user.ID
 
-		// TODO: UserID инициализировать из Context
-		todo := &model.Todo{
-			Title:  req.Title,
-			UserID: user.ID,
+		if !todo.IsTitle() {
+			response.Error(w, http.StatusBadRequest, response.ErrIncorrectData)
+			return
 		}
 
 		if err := tr.store.Todo().Create(todo); err != nil {
@@ -160,6 +156,11 @@ func (tr *TodoRouter) handlerTodoPatch() http.HandlerFunc {
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
 		req := new(request)
 		json.NewDecoder(r.Body).Decode(req)
+
+		if !model.TodoPatchValid(req.Column, req.Value) {
+			response.Error(w, http.StatusBadRequest, response.ErrIncorrectData)
+			return
+		}
 
 		if err := tr.store.Todo().Patch(user.ID, id, req.Column, req.Value); err != nil {
 			response.Error(w, http.StatusBadRequest, nil)

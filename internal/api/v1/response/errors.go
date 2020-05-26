@@ -9,6 +9,9 @@ var (
 	// ErrIncorrectLoginOrPassword ..
 	ErrIncorrectLoginOrPassword = errors.New("incorrect login or password")
 
+	// ErrIncorrectData ...
+	ErrIncorrectData = errors.New("incorrect data")
+
 	// ErrNotAuthenticated ...
 	ErrNotAuthenticated = errors.New("not authenticated")
 
