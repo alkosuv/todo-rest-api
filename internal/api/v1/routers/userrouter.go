@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gen95mis/todo-rest-api/internal/api/v1/middleware"
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/ctxkey"
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/log"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/response"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
@@ -40,8 +41,9 @@ func (ur *UserRouter) ConfigureRouter() {
 
 func (ur *UserRouter) handlerUserGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+		user := r.Context().Value(ctxkey.CtxKeyUser).(*model.User)
 		response.Response(w, http.StatusOK, user)
+		log.Info(ur.logger, r, http.StatusOK, user)
 	}
 }
 
@@ -54,19 +56,25 @@ func (ur *UserRouter) handlerUserPatch() http.HandlerFunc {
 		req := new(request)
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			response.Error(w, http.StatusInternalServerError, nil)
+			log.Error(ur.logger, r, http.StatusInternalServerError, nil)
+			return
 		}
 
 		if !model.UserPatchValid(req.Column, req.Value) {
 			response.Error(w, http.StatusBadRequest, response.ErrIncorrectData)
+			log.Error(ur.logger, r, http.StatusBadRequest, response.ErrIncorrectData)
+			return
 		}
 
-		user := r.Context().Value(middleware.CtxKeyUser).(*model.User)
+		user := r.Context().Value(ctxkey.CtxKeyUser).(*model.User)
 
 		if err := ur.store.User().Patch(user.ID, req.Column, req.Value); err != nil {
 			response.Error(w, http.StatusBadRequest, err)
+			log.Error(ur.logger, r, http.StatusBadRequest, err)
 			return
 		}
 
 		response.Response(w, http.StatusOK, nil)
+		log.Info(ur.logger, r, http.StatusOK, user)
 	}
 }

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/ctxkey"
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/log"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/response"
 
@@ -40,6 +42,7 @@ func NewMiddleware(router *mux.Router, logger *logrus.Logger, store store.Store,
 // ConfigureMiddleware ...
 func (m *Middleware) ConfigureMiddleware() {
 	m.router.HandleFunc("/sessions", m.handlerSessionCreate()).Methods(http.MethodPost)
+	m.router.HandleFunc("/sessions", m.handlerSessionDelete()).Methods(http.MethodDelete)
 	m.router.HandleFunc("/users", m.handlerUserRegister()).Methods(http.MethodPost)
 }
 
@@ -50,12 +53,15 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 		u := new(model.User)
 		if err := json.NewDecoder(r.Body).Decode(u); err != nil {
 			response.Error(w, http.StatusInternalServerError, nil)
+			log.Error(m.logger, r, http.StatusInternalServerError, nil)
+
 			return
 		}
 
 		// валидация полученных данных
 		if !u.IsLogin() && !u.IsPassword() {
 			response.Error(w, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
+			log.Error(m.logger, r, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
 			return
 		}
 
@@ -63,6 +69,7 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 		id, err := m.store.User().Exists(u.Login, u.Password)
 		if err != nil {
 			response.Error(w, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
+			log.Error(m.logger, r, http.StatusBadRequest, response.ErrIncorrectLoginOrPassword)
 			return
 		}
 
@@ -70,6 +77,7 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 		sessions, err := m.session.Get(r, sessionName)
 		if err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
+			log.Error(m.logger, r, http.StatusInternalServerError, err)
 			return
 		}
 
@@ -77,10 +85,34 @@ func (m *Middleware) handlerSessionCreate() http.HandlerFunc {
 		sessions.Values["user_id"] = id
 		if err := m.session.Save(r, w, sessions); err != nil {
 			response.Error(w, http.StatusInternalServerError, err)
+			log.Error(m.logger, r, http.StatusInternalServerError, err)
 			return
 		}
 
 		response.Response(w, http.StatusOK, nil)
+		log.Info(m.logger, r, http.StatusOK, nil)
+	}
+}
+
+// handlerSessionDelete удаление сессии
+func (m *Middleware) handlerSessionDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// получение сессии
+		session, err := m.session.Get(r, sessionName)
+		if err != nil {
+			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			log.Error(m.logger, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			return
+		}
+		// удаление сессии
+		session.Options.MaxAge = -1
+		if err := sessions.Save(r, w); err != nil {
+			response.Error(w, http.StatusInternalServerError, err)
+			log.Error(m.logger, r, http.StatusUnauthorized, err)
+			return
+		}
+		response.Response(w, http.StatusOK, nil)
+		log.Info(m.logger, r, http.StatusOK, nil)
 	}
 }
 
@@ -90,26 +122,33 @@ func (m *Middleware) handlerUserRegister() http.HandlerFunc {
 		user := new(model.User)
 		if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 			response.Error(w, http.StatusInternalServerError, nil)
+			log.Error(m.logger, r, http.StatusInternalServerError, nil)
+			return
 		}
 
 		// валидация данных
 		if !user.IsUser() {
 			response.Error(w, http.StatusBadRequest, response.ErrIncorrectData)
+			log.Error(m.logger, r, http.StatusBadRequest, response.ErrIncorrectData)
+			return
 		}
 
 		// проверка на уникальность логина
 		if u, _ := m.store.User().FindByLogin(user.Login); u != nil {
 			response.Error(w, http.StatusBadRequest, response.ErrLoginUnavailable)
+			log.Error(m.logger, r, http.StatusBadRequest, response.ErrLoginUnavailable)
 			return
 		}
 
 		//  добавление пользователя
 		if err := m.store.User().Create(user); err != nil {
 			response.Error(w, http.StatusBadRequest, err)
+			log.Error(m.logger, r, http.StatusBadRequest, err)
 			return
 		}
 
 		response.Response(w, http.StatusCreated, user)
+		log.Info(m.logger, r, http.StatusOK, user)
 	}
 }
 
@@ -120,6 +159,7 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 		session, err := m.session.Get(r, sessionName)
 		if err != nil {
 			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			log.Error(m.logger, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
@@ -127,6 +167,7 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 		id, ok := session.Values["user_id"]
 		if !ok {
 			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			log.Error(m.logger, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
@@ -134,13 +175,14 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 		user, err := m.store.User().FindByID(id.(int))
 		if err != nil {
 			response.Error(w, http.StatusUnauthorized, response.ErrNotAuthenticated)
+			log.Error(m.logger, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
 
 		// запись пользователя в context
 		req := r.WithContext(context.WithValue(
 			r.Context(),
-			CtxKeyUser,
+			ctxkey.CtxKeyUser,
 			user,
 		))
 
@@ -151,10 +193,11 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 // UserIsEmpty проверяет наличие авторезованного пользователя в context
 func (m *Middleware) UserIsEmpty(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value(CtxKeyUser).(*model.User)
+		user := r.Context().Value(ctxkey.CtxKeyUser).(*model.User)
 
 		if user.IsNil() {
 			response.Response(w, http.StatusInternalServerError, response.ErrSessions)
+			log.Error(m.logger, r, http.StatusInternalServerError, response.ErrSessions)
 			return
 		}
 

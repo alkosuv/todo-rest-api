@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/routers"
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
@@ -54,6 +55,7 @@ func (s *APIServer) initRouter(logger *logrus.Logger, store store.Store) *mux.Ro
 	router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 
 	api := router.PathPrefix("/api/v1").Subrouter()
+	api.Use(middleware.SetRequestID)
 
 	m := middleware.NewMiddleware(api, logger, store, s.SessionKey)
 	m.ConfigureMiddleware()
@@ -73,6 +75,13 @@ func (s *APIServer) initRouter(logger *logrus.Logger, store store.Store) *mux.Ro
 
 func (s *APIServer) initLogger() *logrus.Logger {
 	logger := logrus.New()
+
+	file, err := os.OpenFile("logger.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		logger.Out = os.Stdout
+	}
+	logger.Out = file
+
 	lvl, _ := logrus.ParseLevel(s.LogLevel)
 	logger.SetLevel(lvl)
 	return logger
