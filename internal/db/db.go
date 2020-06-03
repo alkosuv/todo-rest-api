@@ -9,12 +9,12 @@ import (
 
 // Database ...
 type Database struct {
-	Host     string `toml:"host"`
-	Port     string `toml:"port"`
-	User     string `toml:"user"`
-	Password string `toml:"password"`
-	Database string `toml:"database"`
-	SSLmode  string `toml:"sslmode"`
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
+	SSLmode  string
 }
 
 // ConnectDB ...

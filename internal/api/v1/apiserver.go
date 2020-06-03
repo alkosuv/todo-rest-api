@@ -26,10 +26,12 @@ type APIServer struct {
 }
 
 // NewAPIServer ...
-func NewAPIServer() *APIServer {
+func NewAPIServer(bindAddr string, logLevel string, sessionKey string, database *db.Database) *APIServer {
 	return &APIServer{
-		BindAddr: ":8080",
-		LogLevel: "debug",
+		BindAddr:   bindAddr,
+		LogLevel:   logLevel,
+		SessionKey: sessionKey,
+		Database:   *database,
 	}
 }
 

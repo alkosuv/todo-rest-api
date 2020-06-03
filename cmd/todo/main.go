@@ -1,35 +1,28 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 
-	"github.com/BurntSushi/toml"
-
 	v1 "github.com/gen95mis/todo-rest-api/internal/api/v1"
-)
-
-var (
-	configPath string
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/config"
+	"github.com/joho/godotenv"
 )
 
 func init() {
-	flag.StringVar(
-		&configPath,
-		"config-path",
-		"config/apiserver.toml",
-		"path to config file",
-	)
+	if err := godotenv.Load(); err != nil {
+		log.Print("No .env file found")
+	}
 }
 
 func main() {
-	flag.Parse()
-
-	apiserver := v1.NewAPIServer()
-	if _, err := toml.DecodeFile(configPath, apiserver); err != nil {
-		log.Fatal(err)
-	}
+	c := config.NewConfig()
+	apiserver := v1.NewAPIServer(
+		c.BindAddr,
+		c.LogLevel,
+		c.SessionKey,
+		c.DB,
+	)
 
 	fmt.Println("Server is listening...")
 	if err := apiserver.Start(); err != nil {

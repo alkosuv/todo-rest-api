@@ -1,4 +1,4 @@
 /bin
 /.vscode
-/config/apiserver.toml
+.env
 logger.log
