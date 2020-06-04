@@ -65,3 +65,8 @@ func (u *User) IsName() bool {
 	}
 	return valid
 }
+
+// Sanitize ...
+func (u *User) Sanitize() {
+	u.Password = ""
+}

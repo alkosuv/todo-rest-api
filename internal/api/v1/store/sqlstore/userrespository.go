@@ -14,14 +14,15 @@ type UserRepository struct {
 }
 
 // FindByID ...
-func (r *UserRepository) FindByID(id int) (*model.User, error) {
+func (r *UserRepository) FindByID(userID int) (*model.User, error) {
 	user := new(model.User)
 	err := r.db.QueryRow(
-		`SELECT id, login, name FROM users WHERE id=$1`,
-		id,
+		`SELECT id, login, password, name FROM users WHERE id=$1`,
+		userID,
 	).Scan(
 		&user.ID,
 		&user.Login,
+		&user.Password,
 		&user.Name,
 	)
 
@@ -38,11 +39,12 @@ func (r *UserRepository) FindByID(id int) (*model.User, error) {
 func (r *UserRepository) FindByLogin(login string) (*model.User, error) {
 	user := new(model.User)
 	err := r.db.QueryRow(
-		`SELECT id, login, name FROM users WHERE login=$1`,
+		`SELECT id, login, password, name FROM users WHERE login=$1`,
 		login,
 	).Scan(
 		&user.ID,
 		&user.Login,
+		&user.Password,
 		&user.Name,
 	)
 
@@ -65,9 +67,9 @@ func (r *UserRepository) Create(user *model.User) error {
 }
 
 // Patch ...
-func (r *UserRepository) Patch(id int, column string, value string) error {
+func (r *UserRepository) Patch(userID int, column string, value string) error {
 	query := fmt.Sprintf(`UPDATE users SET %s=$1 WHERE id=$2`, column)
-	if _, err := r.db.Exec(query, value, id); err != nil {
+	if _, err := r.db.Exec(query, value, userID); err != nil {
 		return err
 	}
 	return nil

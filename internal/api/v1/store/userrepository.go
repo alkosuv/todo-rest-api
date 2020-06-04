@@ -6,9 +6,9 @@ import (
 
 // UserRepository ...
 type UserRepository interface {
-	FindByID(id int) (*model.User, error)
+	FindByID(userID int) (*model.User, error)
 	FindByLogin(string) (*model.User, error)
 	Create(*model.User) error
-	Patch(id int, column string, value string) error
+	Patch(userID int, column string, value string) error
 	Exists(login string, password string) (int, error)
 }

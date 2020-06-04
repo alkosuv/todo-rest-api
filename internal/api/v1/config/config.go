@@ -1,9 +1,8 @@
 package config
 
 import (
-	"os"
-
 	"github.com/gen95mis/todo-rest-api/internal/db"
+	"github.com/gen95mis/todo-rest-api/pkg/env"
 )
 
 // Config ...
@@ -17,23 +16,17 @@ type Config struct {
 // NewConfig ...
 func NewConfig() *Config {
 	return &Config{
-		BindAddr:   getEnv("BIND_ADDR"),
-		LogLevel:   getEnv("LOG_LEVEL"),
-		SessionKey: getEnv("SESSION_KEY"),
+		BindAddr:   env.GetEnv("BIND_ADDR"),
+		LogLevel:   env.GetEnv("LOG_LEVEL"),
+		SessionKey: env.GetEnv("SESSION_KEY"),
 
 		DB: &db.Database{
-			Host:     getEnv("DB_HOST"),
-			Port:     getEnv("DB_PORT"),
-			User:     getEnv("DB_USER"),
-			Password: getEnv("DB_PASSWORD"),
-			Database: getEnv("DB_DATABASE"),
-			SSLmode:  getEnv("DB_SSLMODE"),
+			Host:     env.GetEnv("DB_HOST"),
+			Port:     env.GetEnv("DB_PORT"),
+			User:     env.GetEnv("DB_USER"),
+			Password: env.GetEnv("DB_PASSWORD"),
+			Database: env.GetEnv("DB_DATABASE"),
+			SSLmode:  env.GetEnv("DB_SSLMODE"),
 		},
 	}
-}
-
-// getEnv получение значения из окружения, если значение отсутствует, то возвращает пустую строку
-func getEnv(key string) string {
-	value, _ := os.LookupEnv(key)
-	return value
 }

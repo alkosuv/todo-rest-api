@@ -147,6 +147,7 @@ func (m *Middleware) handlerUserRegister() http.HandlerFunc {
 			return
 		}
 
+		user.Sanitize()
 		response.Response(w, http.StatusCreated, user)
 		log.Info(m.logger, r, http.StatusOK, user)
 	}
@@ -178,6 +179,7 @@ func (m *Middleware) AuthenticateUser(next http.Handler) http.Handler {
 			log.Error(m.logger, r, http.StatusUnauthorized, response.ErrNotAuthenticated)
 			return
 		}
+		user.Sanitize()
 
 		// запись пользователя в context
 		req := r.WithContext(context.WithValue(

@@ -150,7 +150,7 @@ func (tr *TodoRouter) handlerTodoDelete() http.HandlerFunc {
 		user := r.Context().Value(ctxkey.CtxKeyUser).(*model.User)
 
 		id, _ := strconv.Atoi(mux.Vars(r)["id"])
-		if err := tr.store.Todo().Delete(user.ID, id); err != nil {
+		if ok, err := tr.store.Todo().Delete(user.ID, id); err != nil || !ok {
 			response.Error(w, http.StatusBadRequest, err)
 			log.Error(tr.logger, r, http.StatusBadRequest, err)
 			return

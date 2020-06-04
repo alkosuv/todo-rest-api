@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
+	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
 )
 
 // TodoRepository ...
@@ -38,8 +39,34 @@ func (r *TodoRepository) GetAll(userID int) ([]*model.Todo, error) {
 	return todos, nil
 }
 
+// FindByID ...
+func (r *TodoRepository) FindByID(userID int, todoID int) (*model.Todo, error) {
+	todo := new(model.Todo)
+	err := r.db.QueryRow(`SELECT id, user_id, title, completed, date_create
+		FROM todos WHERE user_id=$1 AND id=$2`,
+		userID, todoID,
+	).Scan(
+		&todo.ID,
+		&todo.UserID,
+		&todo.Title,
+		&todo.Completed,
+		&todo.DateCreate,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return todo, nil
+}
+
 // FindCompleted ...
-func (r *TodoRepository) FindCompleted(userID int, completed string) ([]*model.Todo, error) {
+func (r *TodoRepository) FindCompleted(userID int, completed string) (
+	[]*model.Todo, error,
+) {
 	rows, err := r.db.Query(
 		`SELECT id, title, completed, date_create 
 		FROM todos 
@@ -83,7 +110,9 @@ func (r *TodoRepository) CountAll(userID int) (int, error) {
 }
 
 // CountCompleted ...
-func (r *TodoRepository) CountCompleted(userID int, completed string) (int, error) {
+func (r *TodoRepository) CountCompleted(userID int, completed string) (
+	int, error,
+) {
 	var count int
 	err := r.db.QueryRow(
 		`SELECT count(*) FROM todos WHERE user_id=$1 AND completed=$2`,
@@ -100,7 +129,8 @@ func (r *TodoRepository) CountCompleted(userID int, completed string) (int, erro
 // Create ...
 func (r *TodoRepository) Create(todo *model.Todo) error {
 	err := r.db.QueryRow(
-		`INSERT INTO todos (user_id, title) VALUES ($1, $2) returning id, date_create`,
+		`INSERT INTO todos (user_id, title) 
+		VALUES ($1, $2) RETURNING id, date_create`,
 		todo.UserID,
 		todo.Title,
 	).Scan(&todo.ID, &todo.DateCreate)
@@ -113,26 +143,32 @@ func (r *TodoRepository) Create(todo *model.Todo) error {
 }
 
 // Delete ...
-func (r *TodoRepository) Delete(userID int, id int) error {
+func (r *TodoRepository) Delete(userID int, todoID int) (bool, error) {
 	if _, err := r.db.Exec(
 		`DELETE FROM todos WHERE id=$1 AND user_id=$2`,
-		id, userID,
+		todoID, userID,
 	); err != nil {
-		return err
+		return false, err
 	}
-	return nil
+
+	_, err := r.FindByID(userID, todoID)
+	if err == store.ErrRecordNotFound {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // Patch ...
 func (r *TodoRepository) Patch(
-	userID int, id int, column string, value string,
+	userID int, todoID int, column string, value string,
 ) error {
 	query := fmt.Sprintf(
 		`UPDATE todos SET %s=$1 WHERE id=$2 AND user_id=$3`,
 		column,
 	)
 
-	if _, err := r.db.Exec(query, value, id, userID); err != nil {
+	if _, err := r.db.Exec(query, value, todoID, userID); err != nil {
 		return err
 	}
 	return nil
