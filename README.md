@@ -24,28 +24,28 @@ ___
 * /api/v1/sessions - post
 
 ```JSON
-    {
-        "login": "user0",
-        "password": "12345"
-    }
+{
+    "login": "user0",
+    "password": "12345"
+}
 ```
 
 
 * /api/v1/users - post
 
 ```JSON
-    {
-        "login": "user0",
-        "password": "12345"
-    }
+{
+    "login": "user0",
+    "password": "12345"
+}
 ```
 
 * api/v1/private/todos - post
 
 ```JSON
-    {
-        "title": "Title"
-    }
+{
+    "title": "Title"
+}
 ```
 
 * api/v1/private/todos - patch
