@@ -11,7 +11,7 @@ type Todo struct {
 	DateCreate string `json:"date_create"`
 }
 
-// TodoPatchValid ...
+// TodoPatchValid валидация patch запросов
 func TodoPatchValid(column string, value string) bool {
 	t := new(Todo)
 	switch strings.ToLower(column) {
@@ -28,7 +28,7 @@ func TodoPatchValid(column string, value string) bool {
 	return false
 }
 
-// IsTitle ...
+// IsTitle валидация заголовка
 func (t *Todo) IsTitle() bool {
 	if len(t.Title) < 1 || len(t.Title) > 200 {
 		return false

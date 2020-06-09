@@ -4,7 +4,7 @@ import (
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 )
 
-// UserRepository ...
+// UserRepository интерфейс описывает функции завпросов к таблице User
 type UserRepository interface {
 	FindByID(userID int) (*model.User, error)
 	FindByLogin(string) (*model.User, error)

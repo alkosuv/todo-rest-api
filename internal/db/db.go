@@ -7,7 +7,7 @@ import (
 	_ "github.com/lib/pq" // postgres
 )
 
-// Database ...
+// Database структура для подключения к БД
 type Database struct {
 	Host     string
 	Port     string
@@ -17,7 +17,7 @@ type Database struct {
 	SSLmode  string
 }
 
-// ConnectDB ...
+// ConnectDB создание подключения к БД
 func (d *Database) ConnectDB() (*sql.DB, error) {
 	db, err := sql.Open("postgres", d.String())
 	if err != nil {
@@ -31,6 +31,7 @@ func (d *Database) ConnectDB() (*sql.DB, error) {
 	return db, nil
 }
 
+// String ...
 func (d *Database) String() string {
 	return fmt.Sprintf(
 		`host=%s port=%s user=%s password=%s database=%s sslmode=%s`,

@@ -17,15 +17,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// APIServer ...
+// APIServer структура api сервера
 type APIServer struct {
-	BindAddr   string `toml:"bind_addr"`
-	LogLevel   string `toml:"log_level"`
-	SessionKey string `toml:"session_key"`
+	BindAddr   string
+	LogLevel   string
+	SessionKey string
 	Database   db.Database
 }
 
-// NewAPIServer ...
+// NewAPIServer создание APIServer
 func NewAPIServer(bindAddr string, logLevel string, sessionKey string, database *db.Database) *APIServer {
 	return &APIServer{
 		BindAddr:   bindAddr,
@@ -35,7 +35,7 @@ func NewAPIServer(bindAddr string, logLevel string, sessionKey string, database 
 	}
 }
 
-// Start ...
+// Start запустить APIServer
 func (s *APIServer) Start() error {
 
 	logger := s.initLogger()
@@ -52,6 +52,7 @@ func (s *APIServer) Start() error {
 	return http.ListenAndServe(s.BindAddr, router)
 }
 
+// initRouter инициализация маршруторизатора
 func (s *APIServer) initRouter(logger *logrus.Logger, store store.Store) *mux.Router {
 	router := mux.NewRouter()
 	router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
@@ -75,6 +76,7 @@ func (s *APIServer) initRouter(logger *logrus.Logger, store store.Store) *mux.Ro
 	return router
 }
 
+// initLogger инициализация логера
 func (s *APIServer) initLogger() *logrus.Logger {
 	logger := logrus.New()
 

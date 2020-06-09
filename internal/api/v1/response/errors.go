@@ -3,18 +3,18 @@ package response
 import "errors"
 
 var (
-	// ErrLoginUnavailable ...
+	// ErrLoginUnavailable login unavailable
 	ErrLoginUnavailable = errors.New("login unavailable")
 
-	// ErrIncorrectLoginOrPassword ..
+	// ErrIncorrectLoginOrPassword incorrect login or password
 	ErrIncorrectLoginOrPassword = errors.New("incorrect login or password")
 
-	// ErrIncorrectData ...
+	// ErrIncorrectData incorrect data
 	ErrIncorrectData = errors.New("incorrect data")
 
-	// ErrNotAuthenticated ...
+	// ErrNotAuthenticated not authenticated
 	ErrNotAuthenticated = errors.New("not authenticated")
 
-	// ErrSessions ...
+	// ErrSessions error session
 	ErrSessions = errors.New("error session")
 )

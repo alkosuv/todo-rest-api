@@ -8,12 +8,12 @@ import (
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
 )
 
-// TodoRepository ...
+// TodoRepository структура todo хранилища
 type TodoRepository struct {
 	db *sql.DB
 }
 
-// GetAll ...
+// GetAll получить все задач
 func (r *TodoRepository) GetAll(userID int) ([]*model.Todo, error) {
 	rows, err := r.db.Query(
 		`SELECT id, title, completed, date_create FROM todos WHERE user_id=$1`,
@@ -39,7 +39,7 @@ func (r *TodoRepository) GetAll(userID int) ([]*model.Todo, error) {
 	return todos, nil
 }
 
-// FindByID ...
+// FindByID поиск задач по ID
 func (r *TodoRepository) FindByID(userID int, todoID int) (*model.Todo, error) {
 	todo := new(model.Todo)
 	err := r.db.QueryRow(`SELECT id, user_id, title, completed, date_create
@@ -63,7 +63,7 @@ func (r *TodoRepository) FindByID(userID int, todoID int) (*model.Todo, error) {
 	return todo, nil
 }
 
-// FindCompleted ...
+// FindCompleted поиск задач по состоянию (true/false)
 func (r *TodoRepository) FindCompleted(userID int, completed string) (
 	[]*model.Todo, error,
 ) {
@@ -95,7 +95,7 @@ func (r *TodoRepository) FindCompleted(userID int, completed string) (
 	return todos, nil
 }
 
-// CountAll ...
+// CountAll получить количество задач
 func (r *TodoRepository) CountAll(userID int) (int, error) {
 	var count int
 	err := r.db.QueryRow(
@@ -109,7 +109,7 @@ func (r *TodoRepository) CountAll(userID int) (int, error) {
 	return count, nil
 }
 
-// CountCompleted ...
+// CountCompleted получить количество задача по состоянию
 func (r *TodoRepository) CountCompleted(userID int, completed string) (
 	int, error,
 ) {
@@ -126,7 +126,7 @@ func (r *TodoRepository) CountCompleted(userID int, completed string) (
 	return count, nil
 }
 
-// Create ...
+// Create создание задачи
 func (r *TodoRepository) Create(todo *model.Todo) error {
 	err := r.db.QueryRow(
 		`INSERT INTO todos (user_id, title) 
@@ -142,7 +142,7 @@ func (r *TodoRepository) Create(todo *model.Todo) error {
 	return nil
 }
 
-// Delete ...
+// Delete удаление задачи
 func (r *TodoRepository) Delete(userID int, todoID int) (bool, error) {
 	if _, err := r.db.Exec(
 		`DELETE FROM todos WHERE id=$1 AND user_id=$2`,
@@ -159,7 +159,7 @@ func (r *TodoRepository) Delete(userID int, todoID int) (bool, error) {
 	return false, nil
 }
 
-// Patch ...
+// Patch обновление column
 func (r *TodoRepository) Patch(
 	userID int, todoID int, column string, value string,
 ) error {

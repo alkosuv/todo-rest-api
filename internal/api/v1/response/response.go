@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Response ...
+// Response возвращает ответ от сервера
 func Response(
 	w http.ResponseWriter,
 	statusCode int,
@@ -18,7 +18,7 @@ func Response(
 	}
 }
 
-// Error ...
+// Error возвращает ошибку от сервера
 func Error(
 	w http.ResponseWriter,
 	statusCode int,

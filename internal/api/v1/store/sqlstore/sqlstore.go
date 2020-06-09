@@ -6,21 +6,21 @@ import (
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
 )
 
-// SQLStore ...
+// SQLStore структура описывающее SQL хранилище
 type SQLStore struct {
 	db             *sql.DB
 	todoRepository *TodoRepository
 	userRepository *UserRepository
 }
 
-// NewStore ...
+// NewStore создание нового хранилища
 func NewStore(db *sql.DB) *SQLStore {
 	return &SQLStore{
 		db: db,
 	}
 }
 
-// Todo ...
+// Todo получение todo хранилища
 func (s *SQLStore) Todo() store.TodoRepository {
 	if s.todoRepository != nil {
 		return s.todoRepository
@@ -33,7 +33,7 @@ func (s *SQLStore) Todo() store.TodoRepository {
 	return s.todoRepository
 }
 
-// User ...
+// User получение user хранилища
 func (s *SQLStore) User() store.UserRepository {
 	if s.userRepository != nil {
 		return s.userRepository

@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Error ...
+// Error выводит ошибку в logfile
 func Error(logger *logrus.Logger, r *http.Request, code int, err error) {
 	logger.WithFields(logrus.Fields{
 		"uuid":   r.Context().Value(ctxkey.CtxKeyRequestID),
@@ -18,7 +18,7 @@ func Error(logger *logrus.Logger, r *http.Request, code int, err error) {
 	}).Error()
 }
 
-// Info ...
+// Info выводит информацию в logfile
 func Info(logger *logrus.Logger, r *http.Request, code int, message interface{}) {
 	logger.WithFields(logrus.Fields{
 		"uuid":   r.Context().Value(ctxkey.CtxKeyRequestID),

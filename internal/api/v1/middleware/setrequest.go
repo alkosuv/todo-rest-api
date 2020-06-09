@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// SetRequestID ...
+// SetRequestID установить RequestID
 func SetRequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := uuid.New().String()

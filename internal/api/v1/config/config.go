@@ -5,7 +5,7 @@ import (
 	"github.com/gen95mis/todo-rest-api/pkg/env"
 )
 
-// Config ...
+// Config структура для конфигурации сервера
 type Config struct {
 	BindAddr   string
 	LogLevel   string
@@ -13,7 +13,7 @@ type Config struct {
 	DB         *db.Database
 }
 
-// NewConfig ...
+// NewConfig инициализация новой конфигурации
 func NewConfig() *Config {
 	return &Config{
 		BindAddr:   env.GetEnv("BIND_ADDR"),

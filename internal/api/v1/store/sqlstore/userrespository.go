@@ -8,12 +8,12 @@ import (
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/store"
 )
 
-// UserRepository ...
+// UserRepository структура user хранилища
 type UserRepository struct {
 	db *sql.DB
 }
 
-// FindByID ...
+// FindByID поиск пользователя по ID
 func (r *UserRepository) FindByID(userID int) (*model.User, error) {
 	user := new(model.User)
 	err := r.db.QueryRow(
@@ -35,7 +35,7 @@ func (r *UserRepository) FindByID(userID int) (*model.User, error) {
 	return user, nil
 }
 
-// FindByLogin ...
+// FindByLogin поиск пользователя по login
 func (r *UserRepository) FindByLogin(login string) (*model.User, error) {
 	user := new(model.User)
 	err := r.db.QueryRow(
@@ -57,7 +57,7 @@ func (r *UserRepository) FindByLogin(login string) (*model.User, error) {
 	return user, nil
 }
 
-// Create ...
+// Create создание пользователя
 func (r *UserRepository) Create(user *model.User) error {
 	return r.db.QueryRow(
 		`INSERT INTO users (login, password, name) 
@@ -66,7 +66,7 @@ func (r *UserRepository) Create(user *model.User) error {
 	).Scan(&user.ID)
 }
 
-// Patch ...
+// Patch обновление column
 func (r *UserRepository) Patch(userID int, column string, value string) error {
 	query := fmt.Sprintf(`UPDATE users SET %s=$1 WHERE id=$2`, column)
 	if _, err := r.db.Exec(query, value, userID); err != nil {

@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Middleware ...
+// Middleware структура middle уровня
 type Middleware struct {
 	router  *mux.Router
 	logger  *logrus.Logger
@@ -39,7 +39,7 @@ func NewMiddleware(router *mux.Router, logger *logrus.Logger, store store.Store,
 	}
 }
 
-// ConfigureMiddleware ...
+// ConfigureMiddleware конфигурация маршрутов
 func (m *Middleware) ConfigureMiddleware() {
 	m.router.HandleFunc("/sessions", m.handlerSessionCreate()).Methods(http.MethodPost)
 	m.router.HandleFunc("/sessions", m.handlerSessionDelete()).Methods(http.MethodDelete)

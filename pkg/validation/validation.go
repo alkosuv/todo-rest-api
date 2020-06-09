@@ -4,7 +4,7 @@ import (
 	"regexp"
 )
 
-// IsString ...
+// IsString валидация строк
 func IsString(str string, pattern string) (bool, error) {
 	matched, err := regexp.Match(pattern, []byte(str))
 	if err != nil {

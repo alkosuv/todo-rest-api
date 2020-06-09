@@ -4,7 +4,7 @@ import (
 	"github.com/gen95mis/todo-rest-api/internal/api/v1/model"
 )
 
-// TodoRepository ...
+// TodoRepository интерфейс описывает функции завпросов к таблице Todo
 type TodoRepository interface {
 	GetAll(userID int) ([]*model.Todo, error)
 	FindByID(userID int, todoID int) (*model.Todo, error)

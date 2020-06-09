@@ -3,9 +3,9 @@ package ctxkey
 type ctxKey int8
 
 const (
-	// CtxKeyUser ...
+	// CtxKeyUser ключ для контехата User
 	CtxKeyUser ctxKey = iota
 
-	// CtxKeyRequestID ...
+	// CtxKeyRequestID ключ для RequestID
 	CtxKeyRequestID ctxKey = iota
 )

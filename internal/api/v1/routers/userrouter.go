@@ -13,14 +13,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// UserRouter ...
+// UserRouter структура user уровня
 type UserRouter struct {
 	router *mux.Router
 	logger *logrus.Logger
 	store  store.Store
 }
 
-// NewUserRouter ...
+// NewUserRouter создания нового UserRouter уровня
 func NewUserRouter(router *mux.Router, logger *logrus.Logger, store store.Store) *UserRouter {
 	return &UserRouter{
 		router: router,
@@ -33,7 +33,7 @@ func (ur *UserRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ur.router.ServeHTTP(w, r)
 }
 
-// ConfigureRouter ...
+// ConfigureRouter конфигурация маршуртов
 func (ur *UserRouter) ConfigureRouter() {
 	ur.router.HandleFunc("/users", ur.handlerUserGet()).Methods(http.MethodGet)
 	ur.router.HandleFunc("/users", ur.handlerUserPatch()).Methods(http.MethodPatch)

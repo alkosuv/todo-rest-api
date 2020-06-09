@@ -16,14 +16,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// TodoRouter ....
+// TodoRouter структура todo уровня
 type TodoRouter struct {
 	router *mux.Router
 	logger *logrus.Logger
 	store  store.Store
 }
 
-// NewTodoRouter ...
+// NewTodoRouter создание нового TodoRouter уровня
 func NewTodoRouter(router *mux.Router, logger *logrus.Logger, store store.Store) *TodoRouter {
 	return &TodoRouter{
 		router: router,
@@ -36,7 +36,7 @@ func (tr *TodoRouter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tr.router.ServeHTTP(w, r)
 }
 
-// ConfigureRouter ...
+// ConfigureRouter конфигурация маршрутов
 func (tr *TodoRouter) ConfigureRouter() {
 	tr.router.HandleFunc("/todos", tr.handlerTodosGet()).Methods(http.MethodGet)
 	tr.router.HandleFunc("/todos/count", tr.handlerTodosCount()).Methods(http.MethodGet)
@@ -47,6 +47,7 @@ func (tr *TodoRouter) ConfigureRouter() {
 	tr.router.HandleFunc("/todos/{id:[0-9]+}", tr.handlerTodoPatch()).Methods(http.MethodPatch)
 }
 
+//
 func (tr *TodoRouter) handlerTodosGet() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := r.Context().Value(ctxkey.CtxKeyUser).(*model.User)
